@@ -27,6 +27,8 @@
 ///当前装满程度
 @property (nonatomic, assign) CGFloat currentProgress;
 
+@property (nonatomic) int i;
+
 @end
 
 
@@ -54,6 +56,8 @@
 
 - (void)initWaveView
 {
+    self.i = 0;
+    
     self.backgroundColor = [UIColor clearColor];
     
     
@@ -83,7 +87,7 @@
 {
     _fillColor = fillColor;
     self.circleLayer.fillColor = fillColor.CGColor;
-    self.circleLayer.strokeColor = fillColor.CGColor;
+    self.circleLayer.strokeColor = UIColor.clearColor.CGColor;
 }
 
 - (void)startAnimate
@@ -98,35 +102,32 @@
 
 -(void)animateWave
 {
-    static int i = 0;
-    
     CABasicAnimation *circleAnim = [CABasicAnimation animationWithKeyPath:@"path"];
     circleAnim.removedOnCompletion = NO;
-    circleAnim.duration  = 0.5;
+    circleAnim.fillMode = kCAFillModeForwards;
+    circleAnim.duration = 0.5;
     circleAnim.timingFunction = [CAMediaTimingFunction functionWithName:@"linear"];
-    int num = (int)(4/self.waveSepeed);
-    if (i% num == 0) {
+    int num = (int)(4 / self.waveSepeed);
+    if (self.i % num == 0) {
         self.circleLayer.path = [self pathWith:-1].CGPath;
     }
-
+    
     if (self.currentProgress > self.progress) {
-        self.currentProgress -= self.progress/num;
+        self.currentProgress -= self.progress / num;
     }
     if (self.currentProgress < self.progress) {
         self.currentProgress = self.progress;
     }
     circleAnim.fromValue = (__bridge id)(self.circleLayer.path);
-    circleAnim.toValue   = (__bridge id)[self pathWith:i%num].CGPath;
+    circleAnim.toValue   = (__bridge id)[self pathWith:self.i % num].CGPath;
     circleAnim.delegate = self;
-    self.circleLayer.path = [self pathWith:i%num].CGPath;
-    [self.circleLayer addAnimation:circleAnim forKey:@"animateCirclePath"];
+    self.circleLayer.path = [self pathWith:self.i % num].CGPath;
+    [self.circleLayer addAnimation:circleAnim forKey:[NSString stringWithFormat:@"animateCirclePath: %@", [NSDate date]]];
     
-    i++;
-
+    self.i++;
 }
 
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-
     if (flag && self.isAnimation) {
         [self animateWave];
     }
@@ -135,10 +136,11 @@
     }
 }
 
+
 - (UIBezierPath *)pathWith:(int)tag {
-    
     CGFloat height = self.frame.size.height;
-    CGFloat py = height*self.currentProgress;
+    // TODO: Find what progress mean.
+    CGFloat py = 0.0;//height*self.currentProgress;
     CGFloat px = - (tag+1) * self.waveWidth * self.waveSepeed;
     UIBezierPath* bezierPath = [UIBezierPath bezierPath];
     [bezierPath moveToPoint:CGPointMake(px, py)];
