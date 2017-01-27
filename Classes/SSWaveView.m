@@ -92,11 +92,21 @@
 
 - (void)startAnimate
 {
+    if (_isAnimation)
+    {
+        return;
+    }
+    
     _isAnimation = YES;
     [self animateWave];
 }
 - (void)stopAnimate
 {
+    if (!_isAnimation)
+    {
+        return;
+    }
+    
     _isAnimation = NO;
 }
 
